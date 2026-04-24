@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biologie – Mitose | Interaktive Lernaufgabe</title>  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#f5f9f2;
+      --card:#ffffff;
+      --text:#1a2e1a;
+      --muted:#4a6550;
+      --accent:#3B6D11;
+      --accent-light:#639922;
+      --accent-glow:rgba(59,109,17,0.12);
+      --border-weak:rgba(27,90,40,0.15);
+      --border-strong:rgba(27,90,40,0.3);
+
+      --green-50:#EAF3DE;
+      --green-100:#C0DD97;
+      --green-200:#97C459;
+      --green-400:#639922;
+      --green-600:#3B6D11;
+      --green-800:#27500A;
+
+      --teal-50:#E1F5EE;
+      --teal-100:#9FE1CB;
+      --teal-200:#5DCAA5;
+      --teal-400:#1D9E75;
+      --teal-600:#0F6E56;
+      --teal-800:#085041;
+
+      --amber-50:#FAEEDA;
+      --amber-100:#FAC775;
+      --amber-400:#BA7517;
+
+      --success:#1c8b45;
+      --danger:#c33a2c;
+      --warning:#ba7517;
+      --neutral:#808b83;
+      --shadow:0 12px 35px rgba(27,90,40,0.08);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(159,225,203,0.25), transparent 28%),
+        radial-gradient(circle at top right, rgba(192,221,151,0.22), transparent 24%),
+        linear-gradient(180deg, #f8fcf5 0%, var(--bg) 100%);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    .dna-bg{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:0;
+    }
+    .dna{
+      position:absolute;
+      width:140px;
+      height:520px;
+      opacity:.13;
+      animation:floatDNA linear infinite;
+      filter:blur(.2px);
+    }
+    .dna::before,.dna::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:70px;
+      background:
+        radial-gradient(circle, var(--teal-400) 0 3px, transparent 3px),
+        linear-gradient(90deg, transparent 20%, var(--green-400) 20% 24%, transparent 24% 76%, var(--teal-400) 76% 80%, transparent 80%);
+      background-size: 28px 28px, 100% 28px;
+      mask:
+        radial-gradient(circle at 25% 0%, #000 0 8px, transparent 9px) top/100% 28px repeat-y;
+    }
+    .dna::before{
+      transform:skewX(-18deg);
+      border-left:3px solid rgba(59,109,17,.45);
+      border-right:3px solid rgba(15,110,86,.45);
+    }
+    .dna::after{
+      transform:skewX(18deg);
+      border-left:3px solid rgba(15,110,86,.35);
+      border-right:3px solid rgba(59,109,17,.35);
+    }
+    .dna:nth-child(1){left:4%; top:-12%; animation-duration:28s}
+    .dna:nth-child(2){left:82%; top:-18%; animation-duration:34s}
+    .dna:nth-child(3){left:68%; top:42%; animation-duration:25s}
+    .dna:nth-child(4){left:16%; top:54%; animation-duration:31s}
+    .dna:nth-child(5){left:46%; top:-20%; animation-duration:36s}
+    @keyframes floatDNA{
+      0%{transform:translateY(0) rotate(0deg)}
+      50%{transform:translateY(24px) rotate(3deg)}
+      100%{transform:translateY(0) rotate(0deg)}
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      max-width:1120px;
+      margin:0 auto;
+      padding:22px 16px 72px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      background:rgba(245,249,242,.78);
+      border:1px solid rgba(27,90,40,0.08);
+      border-radius:18px;
+      padding:10px 12px;
+      margin-bottom:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      box-shadow:0 8px 20px rgba(27,90,40,.06);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .brand-badge{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--green-100),var(--teal-100));
+      box-shadow:0 8px 18px var(--accent-glow);
+      font-size:22px;
+    }
+    .brand h1{
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size:1.4rem;
+      margin:0;
+      line-height:1.05;
+    }
+    .brand small{
+      display:block;
+      color:var(--muted);
+      font-weight:500;
+      margin-top:3px;
+    }
+
+    .top-actions{display:flex; gap:10px; flex-wrap:wrap;}
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      font:600 0.96rem 'DM Sans', sans-serif;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    button:hover{transform:translateY(-1px)}
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent),var(--accent-light));
+      color:white;
+      box-shadow:0 12px 26px var(--accent-glow);
+    }
+    .btn-secondary{
+      background:white;
+      color:var(--green-800);
+      border:1px solid var(--border-strong);
+    }
+    .btn-ghost{
+      background:rgba(255,255,255,.8);
+      color:var(--green-800);
+      border:1px dashed var(--border-strong);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.25fr .85fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border-weak);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .hero-main{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-main::after{
+      content:"";
+      position:absolute;
+      right:-60px; top:-60px;
+      width:180px; height:180px;
+      background:radial-gradient(circle, rgba(95,202,165,.22), transparent 68%);
+      border-radius:50%;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      background:var(--green-50);
+      border:1px solid var(--border-weak);
+      border-radius:999px;
+      color:var(--green-800);
+      font-size:.9rem;
+      font-weight:600;
+      margin-bottom:14px;
+    }
+    .hero h2{
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size:2.35rem;
+      margin:0 0 10px;
+      line-height:1.05;
+    }
+    .hero p{
+      color:var(--muted);
+      line-height:1.65;
+      margin:0;
+      max-width:66ch;
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+    .pill{
+      background:linear-gradient(135deg,#fff,#f7fbf4);
+      border:1px solid var(--border-weak);
+      padding:10px 12px;
+      border-radius:999px;
+      color:var(--green-800);
+      font-weight:600;
+      font-size:.92rem;
+    }
+
+    .hero-side{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .meta-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+    .meta{
+      background:linear-gradient(180deg,#ffffff,#fbfdf9);
+      border:1px solid var(--border-weak);
+      border-radius:18px;
+      padding:14px;
+    }
+    .meta .label{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-bottom:6px;
+    }
+    .meta .value{
+      font-weight:700;
+      color:var(--green-800);
+    }
+    .progress-ring{
+      padding:14px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--teal-50),var(--green-50));
+      border:1px solid var(--border-weak);
+    }
+    .progress-bar{
+      height:12px; width:100%;
+      background:rgba(27,90,40,.09);
+      border-radius:999px; overflow:hidden; margin-top:8px;
+    }
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--teal-400),var(--accent-light),var(--accent));
+      border-radius:999px;
+      transition:width .3s ease;
+    }
+
+    .content-entry{
+      padding:24px;
+      margin-bottom:20px;
+    }
+    .section-title{
+      margin:0 0 8px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size:1.7rem;
+    }
+    .section-sub{
+      color:var(--muted);
+      line-height:1.6;
+      margin:0 0 16px;
+    }
+    .input-grid{
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:16px;
+      align-items:start;
+    }
+    textarea,input[type="text"]{
+      width:100%;
+      border:1px solid var(--border-strong);
+      border-radius:16px;
+      padding:14px 16px;
+      font:400 1rem 'DM Sans', sans-serif;
+      color:var(--text);
+      background:#fff;
+      outline:none;
+    }
+    textarea{
+      min-height:240px;
+      resize:vertical;
+      line-height:1.55;
+    }
+    input[type="text"]:focus, textarea:focus{
+      box-shadow:0 0 0 4px var(--accent-glow);
+      border-color:var(--accent);
+    }
+    .helper-panel{
+      background:linear-gradient(180deg,var(--green-50),#fff);
+      border:1px solid var(--border-weak);
+      border-radius:18px;
+      padding:16px;
+      position:sticky;
+      top:86px;
+    }
+    .helper-panel h3{
+      margin:0 0 10px;
+      font-size:1.02rem;
+      color:var(--green-800);
+    }
+    .helper-panel ul{
+      margin:0;
+      padding-left:18px;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:.95rem;
+    }
+
+    .tasks-grid{
+      display:grid;
+      gap:18px;
+    }
+    .task{
+      padding:22px;
+      scroll-margin-top:90px;
+    }
+    .task-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .task h3{
+      margin:0;
+      font-size:1.2rem;
+      color:var(--green-800);
+    }
+    .task-type{
+      white-space:nowrap;
+      font-size:.86rem;
+      font-weight:700;
+      padding:8px 10px;
+      border-radius:999px;
+      background:var(--teal-50);
+      color:var(--teal-800);
+      border:1px solid rgba(8,80,65,.14);
+    }
+    .task p{
+      color:var(--text);
+      line-height:1.6;
+      margin-top:0;
+    }
+
+    .options{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+    .option, .match-item, .order-item{
+      background:linear-gradient(180deg,#fff,#fafdf8);
+      border:1px solid var(--border-weak);
+      padding:12px 14px;
+      border-radius:16px;
+      transition:.2s ease;
+    }
+    .option:hover, .match-item:hover, .order-item:hover{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+    .option label{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      cursor:pointer;
+    }
+
+    .word-bank{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:12px 0 14px;
+    }
+    .word-chip{
+      padding:9px 12px;
+      border-radius:999px;
+      background:var(--amber-50);
+      color:#6f4a11;
+      border:1px solid rgba(186,117,23,.25);
+      font-weight:600;
+      font-size:.93rem;
+    }
+
+    .tf-grid{
+      display:grid;
+      gap:12px;
+    }
+    .tf-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:14px;
+      align-items:center;
+      border:1px solid var(--border-weak);
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+    }
+    .tf-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .mini-btn{
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:.92rem;
+      font-weight:700;
+      border:1px solid var(--border-strong);
+      background:#fff;
+      color:var(--green-800);
+      cursor:pointer;
+    }
+    .mini-btn.active{
+      background:linear-gradient(135deg,var(--green-100),var(--teal-100));
+    }
+
+    .match-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .match-left{
+      display:grid;
+      gap:10px;
+    }
+    .match-right{
+      display:grid;
+      gap:10px;
+    }
+    .match-item select{
+      width:100%;
+      margin-top:10px;
+      border:1px solid var(--border-strong);
+      border-radius:12px;
+      padding:10px 12px;
+      font:400 .98rem 'DM Sans',sans-serif;
+      background:#fff;
+      color:var(--text);
+    }
+
+    .sort-list{
+      display:grid;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .order-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .order-controls{
+      display:flex;
+      gap:8px;
+      flex-shrink:0;
+    }
+
+    .free-answer textarea{
+      min-height:110px;
+    }
+
+    .task-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .feedback{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:600;
+      display:none;
+      border:1px solid transparent;
+    }
+    .feedback.show{display:block}
+    .feedback.error{
+      background:rgba(195,58,44,.08);
+      color:var(--danger);
+      border-color:rgba(195,58,44,.16);
+    }
+    .feedback.hint{
+      background:rgba(186,117,23,.09);
+      color:#8a5a10;
+      border-color:rgba(186,117,23,.18);
+    }
+    .feedback.success{
+      background:rgba(28,139,69,.08);
+      color:var(--success);
+      border-color:rgba(28,139,69,.18);
+    }
+    .feedback.solution{
+      background:rgba(74,101,80,.09);
+      color:var(--muted);
+      border-color:rgba(74,101,80,.18);
+      white-space:pre-line;
+    }
+
+    .task-status{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .summary{
+      padding:24px;
+      margin-top:24px;
+      background:linear-gradient(180deg,#ffffff,#f9fcf7);
+    }
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-top:16px;
+    }
+    .summary-box{
+      border:1px solid var(--border-weak);
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+    }
+    .summary-box .num{
+      font-size:1.5rem;
+      font-weight:800;
+      color:var(--green-800);
+      margin-top:5px;
+    }
+
+    .footer-actions{
+      margin-top:18px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .floating-pdf{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:20;
+      box-shadow:0 16px 35px rgba(27,90,40,.18);
+    }
+
+
+    .learning-content{
+      border:1px solid var(--border-weak);
+      border-radius:18px;
+      padding:18px;
+      background:linear-gradient(180deg,#ffffff,#fbfdf9);
+      line-height:1.72;
+    }
+    .learning-content p{
+      color:var(--text);
+      margin:0 0 14px;
+    }
+    .learning-content strong{
+      color:var(--green-800);
+      font-weight:700;
+    }
+    .video-card{
+      margin-top:20px;
+      border:1px solid var(--border-strong);
+      border-radius:18px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(27,90,40,0.06);
+    }
+    .video-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      background:linear-gradient(135deg,var(--green-50),var(--teal-50));
+      border-bottom:1px solid var(--border-weak);
+      color:var(--green-800);
+    }
+    .video-head span{
+      font-size:.9rem;
+      color:var(--muted);
+      font-weight:600;
+    }
+    .video-card iframe{
+      display:block;
+      width:100%;
+      height:420px;
+      border:0;
+      background:#fff;
+    }
+    .video-fallback{
+      padding:10px 14px 14px;
+      margin:0;
+      text-align:center;
+    }
+    .video-fallback a{
+      color:var(--green-600);
+      font-weight:700;
+      text-decoration:none;
+    }
+    .video-fallback a:hover{
+      text-decoration:underline;
+    }
+
+.video-placeholder{
+  padding:30px;
+  text-align:center;
+}
+.play-icon{
+  font-size:40px;
+  margin-bottom:10px;
+}
+.video-button{
+  display:inline-block;
+  margin-top:10px;
+  padding:12px 18px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-light));
+  color:white;
+  text-decoration:none;
+  font-weight:600;
+}
+
+
+.video-thumb-link{
+  display:block;
+  text-decoration:none;
+}
+.video-thumb-link:hover .video-image{
+  transform:scale(1.01);
+  filter:saturate(1.06);
+}
+.video-image{
+  transition:transform .2s ease, filter .2s ease;
+  background:var(--green-50);
+}
+
+.video-image{
+  width:100%;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+.play-overlay{
+  font-size:40px;
+  margin:-60px auto 10px;
+  width:60px;
+  height:60px;
+  background:rgba(0,0,0,0.6);
+  color:white;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.video-button:hover{
+  opacity:0.9;
+}
+
+
+    .small{
+      font-size:.92rem;
+      color:var(--muted);
+    }
+    .hidden{display:none !important}
+
+    @media (max-width: 940px){
+      .hero{grid-template-columns:1fr}
+      .input-grid{grid-template-columns:1fr}
+      .helper-panel{position:relative; top:auto}
+      .match-grid{grid-template-columns:1fr}
+      .summary-grid{grid-template-columns:repeat(2,1fr)}
+    }
+
+    @media (max-width: 640px){
+      .wrap{padding:14px 12px 82px}
+      .topbar{align-items:flex-start; flex-direction:column}
+      .hero h2{font-size:1.9rem}
+      .meta-grid{grid-template-columns:1fr 1fr}
+      .summary-grid{grid-template-columns:1fr}
+      .task-head{flex-direction:column}
+      .tf-row{grid-template-columns:1fr}
+      .floating-pdf{
+        left:12px; right:12px; bottom:12px;
+      }
+      .floating-pdf button{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dna-bg" aria-hidden="true">
+    <div class="dna"></div>
+    <div class="dna"></div>
+    <div class="dna"></div>
+    <div class="dna"></div>
+    <div class="dna"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">🧬</div>
+        <div>
+          <h1>Biologie – Mitose</h1>
+          <small>Interaktive Lernaufgabe mit Feedback, Auswertung und PDF-Export</small>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn-secondary" onclick="scrollToSection('contentArea')">✍️ Lerninhalte</button>
+        <button class="btn-secondary" onclick="scrollToSection('aufgabenStart')">🧪 Zu den Aufgaben</button>
+        <button class="btn-primary" onclick="downloadPDF()">📄 Ergebnisse als PDF herunterladen</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow">🌿 Zellbiologie • Lernmodul</div>
+        <h2>Mitose verstehen, anwenden und sicher unterscheiden</h2>
+        <p>
+          Diese Lernaufgabe verbindet Inhaltsarbeit, Wiederholung und Selbstkontrolle.
+          Du arbeitest mit Begriffen wie Interphase, Prophase, Metaphase, Anaphase,
+          Telophase und Cytokinese und überprüfst dein Wissen in mehreren Aufgabenformaten.
+        </p>
+        <div class="pill-row">
+          <div class="pill">Multiple Choice</div>
+          <div class="pill">Lückentext mit Wortbank</div>
+          <div class="pill">Zuordnung</div>
+          <div class="pill">Wahr / Falsch</div>
+          <div class="pill">Kurzantwort</div>
+          <div class="pill">Reihenfolge</div>
+        </div>
+      </div>
+
+      <div class="card hero-side">
+        <div class="meta-grid">
+          <div class="meta">
+            <div class="label">Fach</div>
+            <div class="value">Biologie</div>
+          </div>
+          <div class="meta">
+            <div class="label">Thema</div>
+            <div class="value">Mitose</div>
+          </div>
+          <div class="meta">
+            <div class="label">Niveau</div>
+            <div class="value">Sekundarstufe I</div>
+          </div>
+          <div class="meta">
+            <div class="label">Geräte</div>
+            <div class="value">Desktop & mobil</div>
+          </div>
+        </div>
+
+        <div class="progress-ring">
+          <strong>Fortschritt</strong>
+          <div class="small">Bearbeitete Aufgaben: <span id="answeredCount">0</span> / <span id="taskCount">8</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="small" style="margin-top:10px;">Punkte: <span id="scoreNow">0</span> / <span id="maxScore">8</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card content-entry" id="contentArea">
+      <h2 class="section-title">📘 Mitose – Lerninhalte</h2>
+      <p class="section-sub">
+        Lies zuerst den Lerntext und schau dir bei Bedarf das Video an. Danach bearbeitest du die Aufgaben.
+      </p>
+
+      <div class="input-grid">
+        <div class="learning-content" id="contentInput">
+          <h3 style="margin-top:0; color:var(--green-800);">🧬 Mitose – Überblick</h3>
+
+          <p>
+            Die <strong>Mitose</strong> ist die Teilung einer Mutterzelle in zwei genetisch identische Tochterzellen.
+            Sie ist ein wichtiger Teil des Zellzyklus und sorgt dafür, dass neue Körperzellen mit derselben
+            Erbinformation entstehen.
+          </p>
+
+          <p>
+            Vor der eigentlichen Mitose findet die <strong>Interphase</strong> statt. In der
+            <strong>G1-Phase</strong> wächst die Zelle und bildet Zellbestandteile. In der
+            <strong>S-Phase</strong> wird die DNA verdoppelt. In der <strong>G2-Phase</strong>
+            bereitet sich die Zelle weiter auf die Zellteilung vor.
+          </p>
+
+          <p>
+            Die Mitose läuft in mehreren Phasen ab: In der <strong>Prophase</strong> kondensiert das Chromatin
+            zu sichtbaren Chromosomen. In der <strong>Prometaphase</strong> lösen sich Kernhülle und Nucleolus
+            auf und der Spindelapparat bildet sich aus. In der <strong>Metaphase</strong> ordnen sich die
+            Chromosomen in der Äquatorialebene an. In der <strong>Anaphase</strong> werden die Schwesterchromatiden
+            getrennt und zu den Zellpolen gezogen. In der <strong>Telophase</strong> entstehen neue Kernhüllen.
+          </p>
+
+          <p>
+            Anschließend folgt die <strong>Cytokinese</strong>. Dabei wird das Cytoplasma geteilt, sodass zwei
+            getrennte, genetisch identische Tochterzellen entstehen. Die Mitose ist besonders wichtig für
+            <strong>Wachstum</strong>, <strong>Regeneration</strong>, <strong>Wundheilung</strong> und
+            <strong>Gewebeerneuerung</strong>.
+          </p>
+
+          <div class="video-card">
+            <div class="video-head">
+              <strong>🎥 Erklärvideo zur Mitose</strong>
+              <span>Studyflix</span>
+            </div>
+
+            <div class="video-placeholder">
+        <a href="https://studyflix.de/biologie/mitose-1807" target="_blank" rel="noopener" class="video-thumb-link"><img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20900%20520%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23EAF3DE%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220.55%22%20stop-color%3D%22%23E1F5EE%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23C0DD97%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22cell%22%20cx%3D%2250%25%22%20cy%3D%2245%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffffff%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220.75%22%20stop-color%3D%22%23dff1d2%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2397C459%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2214%22%20stdDeviation%3D%2214%22%20flood-color%3D%22%2327500A%22%20flood-opacity%3D%220.18%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%0A%20%20%3Crect%20width%3D%22900%22%20height%3D%22520%22%20fill%3D%22url%28%23bg%29%22/%3E%0A%0A%20%20%3Cg%20opacity%3D%220.22%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M80%2080%20C160%2010%2C%20240%20150%2C%20320%2070%20S490%20120%2C%20560%2055%20S730%20110%2C%20820%2045%22%20fill%3D%22none%22%20stroke%3D%22%231D9E75%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M70%20445%20C150%20370%2C%20250%20500%2C%20345%20410%20S515%20455%2C%20610%20385%20S760%20450%2C%20850%20365%22%20fill%3D%22none%22%20stroke%3D%22%23639922%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2295%22%20cy%3D%2278%22%20r%3D%227%22%20fill%3D%22%233B6D11%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22178%22%20cy%3D%2265%22%20r%3D%227%22%20fill%3D%22%230F6E56%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22265%22%20cy%3D%22103%22%20r%3D%227%22%20fill%3D%22%233B6D11%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22610%22%20cy%3D%22385%22%20r%3D%227%22%20fill%3D%22%230F6E56%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22710%22%20cy%3D%22411%22%20r%3D%227%22%20fill%3D%22%233B6D11%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Ctext%20x%3D%22450%22%20y%3D%2276%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2242%22%20font-weight%3D%22700%22%20fill%3D%22%2327500A%22%3EMitose%3C/text%3E%0A%20%20%3Ctext%20x%3D%22450%22%20y%3D%22112%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2221%22%20fill%3D%22%234a6550%22%3EAus%20einer%20Zelle%20entstehen%20zwei%20genetisch%20identische%20Tochterzellen%3C/text%3E%0A%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22450%22%20cy%3D%22285%22%20r%3D%22125%22%20fill%3D%22url%28%23cell%29%22%20stroke%3D%22%233B6D11%22%20stroke-width%3D%226%22/%3E%0A%20%20%20%20%3Cellipse%20cx%3D%22450%22%20cy%3D%22285%22%20rx%3D%2274%22%20ry%3D%2255%22%20fill%3D%22%23E1F5EE%22%20stroke%3D%22%230F6E56%22%20stroke-width%3D%225%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M405%20255%20C425%20280%2C%20405%20305%2C%20425%20326%22%20fill%3D%22none%22%20stroke%3D%22%233B6D11%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M445%20250%20C470%20278%2C%20430%20306%2C%20458%20330%22%20fill%3D%22none%22%20stroke%3D%22%231D9E75%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M490%20255%20C470%20281%2C%20505%20306%2C%20480%20328%22%20fill%3D%22none%22%20stroke%3D%22%23639922%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22235%22%20cy%3D%22350%22%20r%3D%2278%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23639922%22%20stroke-width%3D%225%22/%3E%0A%20%20%20%20%3Cellipse%20cx%3D%22235%22%20cy%3D%22350%22%20rx%3D%2242%22%20ry%3D%2233%22%20fill%3D%22%23E1F5EE%22%20stroke%3D%22%230F6E56%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M210%20335%20C225%20350%2C%20205%20365%2C%20222%20379%22%20fill%3D%22none%22%20stroke%3D%22%233B6D11%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M252%20333%20C236%20350%2C%20263%20364%2C%20246%20380%22%20fill%3D%22none%22%20stroke%3D%22%231D9E75%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22665%22%20cy%3D%22350%22%20r%3D%2278%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23639922%22%20stroke-width%3D%225%22/%3E%0A%20%20%20%20%3Cellipse%20cx%3D%22665%22%20cy%3D%22350%22%20rx%3D%2242%22%20ry%3D%2233%22%20fill%3D%22%23E1F5EE%22%20stroke%3D%22%230F6E56%22%20stroke-width%3D%224%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M640%20335%20C655%20350%2C%20635%20365%2C%20652%20379%22%20fill%3D%22none%22%20stroke%3D%22%233B6D11%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M682%20333%20C666%20350%2C%20693%20364%2C%20676%20380%22%20fill%3D%22none%22%20stroke%3D%22%231D9E75%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cpath%20d%3D%22M340%20345%20C370%20390%2C%20415%20408%2C%20450%20410%20C485%20408%2C%20530%20390%2C%20560%20345%22%20fill%3D%22none%22%20stroke%3D%22%2327500A%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22/%3E%0A%20%20%3Cpolygon%20points%3D%22562%2C345%20543%2C350%20556%2C364%22%20fill%3D%22%2327500A%22%20opacity%3D%220.55%22/%3E%0A%20%20%3Cpolygon%20points%3D%22338%2C345%20357%2C350%20344%2C364%22%20fill%3D%22%2327500A%22%20opacity%3D%220.55%22/%3E%0A%0A%20%20%3Cg%3E%0A%20%20%20%20%3Crect%20x%3D%22330%22%20y%3D%22438%22%20width%3D%22240%22%20height%3D%2244%22%20rx%3D%2222%22%20fill%3D%22%233B6D11%22/%3E%0A%20%20%20%20%3Cpolygon%20points%3D%22425%2C449%20425%2C471%20446%2C460%22%20fill%3D%22%23fff%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%22470%22%20y%3D%22467%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23fff%22%3EVideo%20%C3%B6ffnen%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Mitose Illustration" class="video-image"></a>
+        <div class="play-overlay">▶</div>
+        <h3>Mitose-Video auf Studyflix ansehen</h3>
+        <p>Klicke auf das Bild, um das Video zu öffnen.</p>
+        <a class="video-button" href="https://studyflix.de/biologie/mitose-1807" target="_blank" rel="noopener">▶ Video öffnen</a>
+      </div>
+              <h3>Mitose-Video auf Studyflix ansehen</h3>
+              <p>
+                Das Video kann aus technischen Gründen nicht direkt eingebettet werden.
+                Öffne es über den Button in einem neuen Tab.
+              </p>
+              <a class="video-button" href="https://studyflix.de/biologie/mitose-1807" target="_blank" rel="noopener">
+                ▶ Video öffnen
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <aside class="helper-panel">
+          <h3>💡 Arbeitshinweise</h3>
+          <ul>
+            <li>Lies zuerst den Lerntext.</li>
+            <li>Schau dir danach das Video an, falls du eine Wiederholung brauchst.</li>
+            <li>Bearbeite dann die Aufgaben der Reihe nach oder springe flexibel.</li>
+            <li>Nach dem 1. Fehler bekommst du nur eine kurze Rückmeldung.</li>
+            <li>Nach dem 2. Fehler erscheint ein Tipp.</li>
+            <li>Danach kannst du freiwillig die Lösung anzeigen.</li>
+            <li>Am Ende exportierst du dein Ergebnis als PDF.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <div class="tasks-grid" id="aufgabenStart">
+      <!-- Aufgabe 1 -->
+      <section class="card task" data-task-id="t1">
+        <div class="task-head">
+          <div>
+            <h3>1. Was beschreibt die Mitose?</h3>
+            <p>Wähle die <strong>eine</strong> richtige Aussage.</p>
+          </div>
+          <div class="task-type">Multiple Choice</div>
+        </div>
+        <div class="options">
+          <div class="option"><label><input type="radio" name="t1" value="A"> Die Mitose bildet aus einer Mutterzelle zwei genetisch identische Tochterzellen.</label></div>
+          <div class="option"><label><input type="radio" name="t1" value="B"> Die Mitose halbiert den Chromosomensatz für die Bildung von Keimzellen.</label></div>
+          <div class="option"><label><input type="radio" name="t1" value="C"> Die Mitose findet nur bei Prokaryoten statt.</label></div>
+          <div class="option"><label><input type="radio" name="t1" value="D"> Während der Mitose wird die DNA erstmals hergestellt.</label></div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t1')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t1" onclick="showSolution('t1')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t1"></div>
+        <div class="task-status" id="status-t1">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 2 -->
+      <section class="card task" data-task-id="t2">
+        <div class="task-head">
+          <div>
+            <h3>2. Lückentext zur Interphase</h3>
+            <p>Trage die passenden Begriffe ein. Nutze die Wortbank.</p>
+          </div>
+          <div class="task-type">Lückentext</div>
+        </div>
+        <div class="word-bank">
+          <span class="word-chip">G1-Phase</span>
+          <span class="word-chip">S-Phase</span>
+          <span class="word-chip">G2-Phase</span>
+          <span class="word-chip">DNA</span>
+          <span class="word-chip">wächst</span>
+          <span class="word-chip">vorbereitet</span>
+        </div>
+        <p>
+          In der <input type="text" id="t2a" placeholder="Begriff eintragen" style="max-width:180px; display:inline-block;"> verdoppelt die Zelle ihre
+          <input type="text" id="t2b" placeholder="Begriff eintragen" style="max-width:180px; display:inline-block;">.
+          In der <input type="text" id="t2c" placeholder="Begriff eintragen" style="max-width:180px; display:inline-block;"> wächst die Zelle und bildet Organellen.
+          In der <input type="text" id="t2d" placeholder="Begriff eintragen" style="max-width:180px; display:inline-block;"> wird die nächste Mitose weiter vorbereitet.
+        </p>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t2')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t2" onclick="showSolution('t2')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t2"></div>
+        <div class="task-status" id="status-t2">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 3 -->
+      <section class="card task" data-task-id="t3">
+        <div class="task-head">
+          <div>
+            <h3>3. Ordne die Phasen ihren Merkmalen zu</h3>
+            <p>Wähle zu jeder Phase die passende Beschreibung.</p>
+          </div>
+          <div class="task-type">Zuordnung</div>
+        </div>
+        <div class="match-grid">
+          <div class="match-left">
+            <div class="match-item">
+              <strong>Prophase</strong>
+              <select id="t3-prophase">
+                <option value="">Bitte auswählen</option>
+                <option value="equator">Chromosomen ordnen sich in der Äquatorialebene an</option>
+                <option value="condense">Chromatin kondensiert zu sichtbaren Chromosomen</option>
+                <option value="separate">Schwesterchromatiden werden getrennt</option>
+                <option value="newNuclei">Neue Kernhüllen bilden sich</option>
+              </select>
+            </div>
+            <div class="match-item">
+              <strong>Metaphase</strong>
+              <select id="t3-metaphase">
+                <option value="">Bitte auswählen</option>
+                <option value="equator">Chromosomen ordnen sich in der Äquatorialebene an</option>
+                <option value="condense">Chromatin kondensiert zu sichtbaren Chromosomen</option>
+                <option value="separate">Schwesterchromatiden werden getrennt</option>
+                <option value="newNuclei">Neue Kernhüllen bilden sich</option>
+              </select>
+            </div>
+          </div>
+          <div class="match-right">
+            <div class="match-item">
+              <strong>Anaphase</strong>
+              <select id="t3-anaphase">
+                <option value="">Bitte auswählen</option>
+                <option value="equator">Chromosomen ordnen sich in der Äquatorialebene an</option>
+                <option value="condense">Chromatin kondensiert zu sichtbaren Chromosomen</option>
+                <option value="separate">Schwesterchromatiden werden getrennt</option>
+                <option value="newNuclei">Neue Kernhüllen bilden sich</option>
+              </select>
+            </div>
+            <div class="match-item">
+              <strong>Telophase</strong>
+              <select id="t3-telophase">
+                <option value="">Bitte auswählen</option>
+                <option value="equator">Chromosomen ordnen sich in der Äquatorialebene an</option>
+                <option value="condense">Chromatin kondensiert zu sichtbaren Chromosomen</option>
+                <option value="separate">Schwesterchromatiden werden getrennt</option>
+                <option value="newNuclei">Neue Kernhüllen bilden sich</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t3')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t3" onclick="showSolution('t3')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t3"></div>
+        <div class="task-status" id="status-t3">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 4 -->
+      <section class="card task" data-task-id="t4">
+        <div class="task-head">
+          <div>
+            <h3>4. Wahr oder falsch?</h3>
+            <p>Entscheide bei jeder Aussage.</p>
+          </div>
+          <div class="task-type">Wahr / Falsch</div>
+        </div>
+        <div class="tf-grid">
+          <div class="tf-row">
+            <div>Die DNA wird erst in der Anaphase verdoppelt.</div>
+            <div class="tf-actions">
+              <button class="mini-btn" onclick="setTF('t4a','wahr', this)">Wahr</button>
+              <button class="mini-btn" onclick="setTF('t4a','falsch', this)">Falsch</button>
+            </div>
+          </div>
+          <div class="tf-row">
+            <div>In der Metaphase liegen die Chromosomen in der Äquatorialebene.</div>
+            <div class="tf-actions">
+              <button class="mini-btn" onclick="setTF('t4b','wahr', this)">Wahr</button>
+              <button class="mini-btn" onclick="setTF('t4b','falsch', this)">Falsch</button>
+            </div>
+          </div>
+          <div class="tf-row">
+            <div>Die Cytokinese trennt das Cytoplasma.</div>
+            <div class="tf-actions">
+              <button class="mini-btn" onclick="setTF('t4c','wahr', this)">Wahr</button>
+              <button class="mini-btn" onclick="setTF('t4c','falsch', this)">Falsch</button>
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t4')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t4" onclick="showSolution('t4')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t4"></div>
+        <div class="task-status" id="status-t4">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 5 -->
+      <section class="card task" data-task-id="t5">
+        <div class="task-head">
+          <div>
+            <h3>5. Kurzantwort: Bedeutung der Mitose</h3>
+            <p>Nenne mindestens <strong>zwei</strong> biologische Bedeutungen der Mitose.</p>
+          </div>
+          <div class="task-type">Kurzantwort</div>
+        </div>
+        <div class="free-answer">
+          <textarea id="t5answer" placeholder="Schreibe hier deine Antwort..."></textarea>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t5')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t5" onclick="showSolution('t5')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t5"></div>
+        <div class="task-status" id="status-t5">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 6 -->
+      <section class="card task" data-task-id="t6">
+        <div class="task-head">
+          <div>
+            <h3>6. Bring die Reihenfolge in Ordnung</h3>
+            <p>Sortiere die Mitosephasen in die richtige Reihenfolge. Nutze die Pfeile.</p>
+          </div>
+          <div class="task-type">Reihenfolge</div>
+        </div>
+        <div class="sort-list" id="sortList">
+          <div class="order-item" data-value="Telophase"><span>Telophase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+          <div class="order-item" data-value="Prophase"><span>Prophase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+          <div class="order-item" data-value="Metaphase"><span>Metaphase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+          <div class="order-item" data-value="Anaphase"><span>Anaphase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t6')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t6" onclick="showSolution('t6')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t6"></div>
+        <div class="task-status" id="status-t6">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 7 -->
+      <section class="card task" data-task-id="t7">
+        <div class="task-head">
+          <div>
+            <h3>7. Erkenne die richtige Aussage zur Cytokinese</h3>
+            <p>Es können <strong>mehrere</strong> Aussagen richtig sein.</p>
+          </div>
+          <div class="task-type">Multiple Choice</div>
+        </div>
+        <div class="options">
+          <div class="option"><label><input type="checkbox" id="t7a"> Die Cytokinese trennt das Cytoplasma.</label></div>
+          <div class="option"><label><input type="checkbox" id="t7b"> Die Cytokinese findet typischerweise nach der Telophase statt.</label></div>
+          <div class="option"><label><input type="checkbox" id="t7c"> Bei der Cytokinese entstehen aus einer Mutterzelle in der Regel zwei Tochterzellen.</label></div>
+          <div class="option"><label><input type="checkbox" id="t7d"> Die Cytokinese verdoppelt den Chromosomensatz.</label></div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t7')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t7" onclick="showSolution('t7')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t7"></div>
+        <div class="task-status" id="status-t7">Noch nicht bewertet.</div>
+      </section>
+
+      <!-- Aufgabe 8 -->
+      <section class="card task" data-task-id="t8">
+        <div class="task-head">
+          <div>
+            <h3>8. Transferfrage</h3>
+            <p>Warum ist es wichtig, dass die DNA bereits <strong>vor</strong> der Mitose verdoppelt wird?</p>
+          </div>
+          <div class="task-type">Kurzantwort</div>
+        </div>
+        <div class="free-answer">
+          <textarea id="t8answer" placeholder="Erkläre den Zusammenhang zwischen S-Phase und Mitose..."></textarea>
+        </div>
+        <div class="task-actions">
+          <button class="btn-primary" onclick="checkTask('t8')">Antwort prüfen</button>
+          <button class="btn-ghost hidden" id="solveBtn-t8" onclick="showSolution('t8')">💡 Lösung anzeigen</button>
+        </div>
+        <div class="feedback" id="feedback-t8"></div>
+        <div class="task-status" id="status-t8">Noch nicht bewertet.</div>
+      </section>
+    </div>
+
+    <section class="card summary" id="summaryArea">
+      <h2 class="section-title">Auswertung</h2>
+      <p class="section-sub">Hier siehst du deinen aktuellen Stand. Die PDF-Datei fasst alle Aufgaben und Antworten sauber zusammen.</p>
+
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="small">Punktestand</div>
+          <div class="num"><span id="sumScore">0</span> / 8</div>
+        </div>
+        <div class="summary-box">
+          <div class="small">Im 1. Versuch richtig</div>
+          <div class="num" id="sumFirst">0</div>
+        </div>
+        <div class="summary-box">
+          <div class="small">Im 2. Versuch richtig</div>
+          <div class="num" id="sumSecond">0</div>
+        </div>
+        <div class="summary-box">
+          <div class="small">Lösung verwendet / offen</div>
+          <div class="num" id="sumSolvedOrOpen">8</div>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn-primary" onclick="downloadPDF()">📄 Ergebnisse als PDF herunterladen</button>
+        <button class="btn-secondary" onclick="resetAll()">↺ Alles zurücksetzen</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="floating-pdf">
+    <button class="btn-primary" onclick="downloadPDF()">📄 Ergebnisse als PDF herunterladen</button>
+  </div>
+
+<script>
+const tasks = {
+  t1: {
+    question: "Was beschreibt die Mitose?",
+    type: "single",
+    correct: "A",
+    hint: "Denke an Körperzellen, Zellkernteilung und genetisch identische Tochterzellen.",
+    solution: "Richtig ist A: Die Mitose bildet aus einer Mutterzelle zwei genetisch identische Tochterzellen."
+  },
+  t2: {
+    question: "Lückentext zur Interphase",
+    type: "gaps",
+    correct: {
+      t2a:["s-phase","s phase"],
+      t2b:["dna"],
+      t2c:["g1-phase","g1 phase","g1"],
+      t2d:["g2-phase","g2 phase","g2"]
+    },
+    hint: "In der Interphase gilt: Wachstum zuerst, DNA-Verdopplung in der Mitte, Vorbereitung auf die Teilung am Ende.",
+    solution: "Lösung: S-Phase – DNA – G1-Phase – G2-Phase."
+  },
+  t3: {
+    question: "Ordne die Phasen ihren Merkmalen zu",
+    type: "matching",
+    correct: {
+      "t3-prophase":"condense",
+      "t3-metaphase":"equator",
+      "t3-anaphase":"separate",
+      "t3-telophase":"newNuclei"
+    },
+    hint: "Achte auf die Reihenfolge: erst sichtbar werden, dann in der Mitte anordnen, dann trennen, dann neue Kerne bilden.",
+    solution: "Prophase → Chromatin kondensiert; Metaphase → Äquatorialebene; Anaphase → Schwesterchromatiden trennen sich; Telophase → neue Kernhüllen."
+  },
+  t4: {
+    question: "Wahr oder falsch?",
+    type: "tf",
+    correct: {
+      t4a:"falsch",
+      t4b:"wahr",
+      t4c:"wahr"
+    },
+    hint: "Die DNA-Verdopplung gehört zur S-Phase der Interphase – nicht zur Mitose selbst.",
+    solution: "Aussagen: 1 falsch, 2 wahr, 3 wahr."
+  },
+  t5: {
+    question: "Nenne mindestens zwei biologische Bedeutungen der Mitose.",
+    type: "short",
+    keywords: ["wachstum","regeneration","gewebeerneuerung","heilung","entwicklung","erneuerung"],
+    minKeywords: 2,
+    hint: "Denke daran, wozu dein Körper ständig neue Zellen benötigt.",
+    solution: "Beispielantwort: Mitose ist wichtig für Wachstum, Regeneration, Wundheilung und Gewebeerneuerung."
+  },
+  t6: {
+    question: "Sortiere die Mitosephasen in die richtige Reihenfolge.",
+    type: "order",
+    correct: ["Prophase","Metaphase","Anaphase","Telophase"],
+    hint: "Erst werden Chromosomen sichtbar, dann in der Mitte angeordnet, dann getrennt, dann entstehen neue Kernhüllen.",
+    solution: "Richtige Reihenfolge: Prophase → Metaphase → Anaphase → Telophase."
+  },
+  t7: {
+    question: "Erkenne die richtige Aussage zur Cytokinese.",
+    type: "multi",
+    correct: {t7a:true,t7b:true,t7c:true,t7d:false},
+    hint: "Die Cytokinese betrifft die eigentliche Zellteilung des Cytoplasmas – nicht die DNA-Verdopplung.",
+    solution: "Richtig sind: a, b und c. Falsch ist d."
+  },
+  t8: {
+    question: "Warum ist es wichtig, dass die DNA bereits vor der Mitose verdoppelt wird?",
+    type: "short",
+    keywords: ["jede tochterzelle","beide tochterzellen","genetisch identisch","vollständige","gleiche genetische information","chromatiden","kopie"],
+    minKeywords: 2,
+    hint: "Ohne Verdopplung könnte nicht jede Tochterzelle einen vollständigen Satz an Erbinformation erhalten.",
+    solution: "Beispielantwort: Die DNA muss vorher verdoppelt werden, damit nach der Trennung der Schwesterchromatiden jede Tochterzelle eine vollständige und identische Kopie der Erbinformation erhält."
+  }
+};
+
+const taskState = {};
+Object.keys(tasks).forEach(id => {
+  taskState[id] = {
+    attempts: 0,
+    solved: false,
+    correct: false,
+    statusLabel: "–"
+  }
+});
+
+const tfSelections = {};
+
+function normalize(str){
+  return (str || "")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g," ")
+    .replace(/[–—]/g,"-");
+}
+
+function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+function setFeedback(taskId, type, text){
+  const fb = document.getElementById("feedback-" + taskId);
+  fb.className = "feedback show " + type;
+  fb.textContent = text;
+}
+
+function setStatus(taskId, text){
+  document.getElementById("status-" + taskId).textContent = text;
+  updateSummary();
+}
+
+function revealSolve(taskId){
+  document.getElementById("solveBtn-" + taskId).classList.remove("hidden");
+}
+
+function markSolved(taskId, label, isCorrect){
+  taskState[taskId].solved = true;
+  taskState[taskId].correct = isCorrect;
+  taskState[taskId].statusLabel = label;
+  updateSummary();
+}
+
+function getStudentAnswer(taskId){
+  switch(taskId){
+    case "t1":
+      const s1 = document.querySelector('input[name="t1"]:checked');
+      return s1 ? s1.parentElement.textContent.trim() : "";
+    case "t2":
+      return [
+        document.getElementById("t2a").value,
+        document.getElementById("t2b").value,
+        document.getElementById("t2c").value,
+        document.getElementById("t2d").value
+      ].join(" | ");
+    case "t3":
+      return [
+        "Prophase: " + document.getElementById("t3-prophase").selectedOptions[0].text,
+        "Metaphase: " + document.getElementById("t3-metaphase").selectedOptions[0].text,
+        "Anaphase: " + document.getElementById("t3-anaphase").selectedOptions[0].text,
+        "Telophase: " + document.getElementById("t3-telophase").selectedOptions[0].text
+      ].join(" ; ");
+    case "t4":
+      return [
+        "1: " + (tfSelections.t4a || ""),
+        "2: " + (tfSelections.t4b || ""),
+        "3: " + (tfSelections.t4c || "")
+      ].join(" | ");
+    case "t5":
+      return document.getElementById("t5answer").value.trim();
+    case "t6":
+      return [...document.querySelectorAll("#sortList .order-item")].map(el => el.dataset.value).join(" → ");
+    case "t7":
+      const arr = [];
+      ["t7a","t7b","t7c","t7d"].forEach(id => {
+        if(document.getElementById(id).checked) arr.push(document.querySelector("label[for='"+id+"']"));
+      });
+      return [
+        document.getElementById("t7a").checked ? "a" : null,
+        document.getElementById("t7b").checked ? "b" : null,
+        document.getElementById("t7c").checked ? "c" : null,
+        document.getElementById("t7d").checked ? "d" : null
+      ].filter(Boolean).join(", ");
+    case "t8":
+      return document.getElementById("t8answer").value.trim();
+    default:
+      return "";
+  }
+}
+
+function checkTask(taskId){
+  const task = tasks[taskId];
+  const state = taskState[taskId];
+  if(state.correct || state.statusLabel === "Lösung verwendet ❌"){
+    updateSummary();
+    return;
+  }
+
+  let isCorrect = false;
+  let hasInput = true;
+
+  if(task.type === "single"){
+    const chosen = document.querySelector('input[name="'+taskId+'"]:checked');
+    hasInput = !!chosen;
+    isCorrect = hasInput && chosen.value === task.correct;
+  }
+
+  if(task.type === "gaps"){
+    const a = normalize(document.getElementById("t2a").value);
+    const b = normalize(document.getElementById("t2b").value);
+    const c = normalize(document.getElementById("t2c").value);
+    const d = normalize(document.getElementById("t2d").value);
+    hasInput = !!(a || b || c || d);
+    isCorrect = task.correct.t2a.includes(a) &&
+                task.correct.t2b.includes(b) &&
+                task.correct.t2c.includes(c) &&
+                task.correct.t2d.includes(d);
+  }
+
+  if(task.type === "matching"){
+    const vals = {};
+    Object.keys(task.correct).forEach(id => vals[id] = document.getElementById(id).value);
+    hasInput = Object.values(vals).some(v => v);
+    isCorrect = Object.entries(task.correct).every(([id,val]) => vals[id] === val);
+  }
+
+  if(task.type === "tf"){
+    hasInput = !!(tfSelections.t4a || tfSelections.t4b || tfSelections.t4c);
+    isCorrect = tfSelections.t4a === task.correct.t4a &&
+                tfSelections.t4b === task.correct.t4b &&
+                tfSelections.t4c === task.correct.t4c;
+  }
+
+  if(task.type === "short"){
+    const text = normalize(taskId === "t5" ? document.getElementById("t5answer").value : document.getElementById("t8answer").value);
+    hasInput = !!text;
+    const hits = task.keywords.filter(k => text.includes(normalize(k))).length;
+    isCorrect = hits >= task.minKeywords;
+  }
+
+  if(task.type === "order"){
+    const current = [...document.querySelectorAll("#sortList .order-item")].map(el => el.dataset.value);
+    hasInput = current.length > 0;
+    isCorrect = JSON.stringify(current) === JSON.stringify(task.correct);
+  }
+
+  if(task.type === "multi"){
+    const current = {
+      t7a: document.getElementById("t7a").checked,
+      t7b: document.getElementById("t7b").checked,
+      t7c: document.getElementById("t7c").checked,
+      t7d: document.getElementById("t7d").checked
+    };
+    hasInput = Object.values(current).some(Boolean);
+    isCorrect = Object.keys(task.correct).every(k => current[k] === task.correct[k]);
+  }
+
+  if(!hasInput){
+    setFeedback(taskId, "error", "Bitte gib zuerst eine Antwort ein.");
+    return;
+  }
+
+  state.attempts += 1;
+
+  if(isCorrect){
+    const label = state.attempts === 1 ? "1. Versuch ✅" : "2. Versuch ✅";
+    setFeedback(taskId, "success", state.attempts === 1 ? "✅ Richtig – sehr gut!" : "✅ Richtig – jetzt passt es!");
+    setStatus(taskId, label);
+    markSolved(taskId, label, true);
+  } else {
+    if(state.attempts === 1){
+      setFeedback(taskId, "error", "❌ Leider falsch – versuch es nochmal");
+      setStatus(taskId, "Noch offen – 1 Fehlversuch");
+      markSolved(taskId, "Noch offen – 1 Fehlversuch", false);
+    } else {
+      setFeedback(taskId, "hint", "🧭 Tipp: " + task.hint);
+      setStatus(taskId, "Noch offen – Tipp erhalten");
+      revealSolve(taskId);
+      markSolved(taskId, "Noch offen – Tipp erhalten", false);
+    }
+  }
+}
+
+function showSolution(taskId){
+  const task = tasks[taskId];
+  setFeedback(taskId, "solution", "Lösung:\n" + task.solution);
+  setStatus(taskId, "Lösung verwendet ❌");
+  taskState[taskId].attempts = Math.max(taskState[taskId].attempts, 2);
+  markSolved(taskId, "Lösung verwendet ❌", false);
+}
+
+function setTF(id, value, btn){
+  tfSelections[id] = value;
+  const row = btn.closest(".tf-actions");
+  [...row.querySelectorAll(".mini-btn")].forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function moveUp(btn){
+  const item = btn.closest(".order-item");
+  const prev = item.previousElementSibling;
+  if(prev) item.parentNode.insertBefore(item, prev);
+}
+function moveDown(btn){
+  const item = btn.closest(".order-item");
+  const next = item.nextElementSibling;
+  if(next) item.parentNode.insertBefore(next, item);
+}
+
+function updateSummary(){
+  const ids = Object.keys(tasks);
+  let answered = 0;
+  let score = 0;
+  let first = 0;
+  let second = 0;
+  let solvedOrOpen = 0;
+
+  ids.forEach(id => {
+    const st = taskState[id];
+    if(st.attempts > 0 || st.statusLabel !== "–") answered++;
+    if(st.statusLabel === "1. Versuch ✅"){ score++; first++; }
+    if(st.statusLabel === "2. Versuch ✅"){ score++; second++; }
+    if(st.statusLabel === "Lösung verwendet ❌" || st.statusLabel === "–" || st.statusLabel.startsWith("Noch offen")) solvedOrOpen++;
+  });
+
+  document.getElementById("answeredCount").textContent = answered;
+  document.getElementById("taskCount").textContent = ids.length;
+  document.getElementById("scoreNow").textContent = score;
+  document.getElementById("maxScore").textContent = ids.length;
+  document.getElementById("sumScore").textContent = score;
+  document.getElementById("sumFirst").textContent = first;
+  document.getElementById("sumSecond").textContent = second;
+  document.getElementById("sumSolvedOrOpen").textContent = solvedOrOpen;
+  document.getElementById("progressFill").style.width = (answered / ids.length * 100) + "%";
+}
+
+function getEvaluationText(score, max){
+  const percent = Math.round(score / max * 100);
+  if(percent >= 88) return "Sehr starke Leistung – das Thema Mitose sitzt bereits sicher.";
+  if(percent >= 63) return "Gute Leistung – einzelne Schritte kannst du noch gezielt wiederholen.";
+  if(percent >= 38) return "Solide Grundlage – mit einer Wiederholung der Phasen wirst du noch sicherer.";
+  return "Bitte wiederhole die Lerninhalte noch einmal und bearbeite die Aufgaben erneut.";
+}
+
+function statusColor(label){
+  if(label === "1. Versuch ✅") return [28,139,69];
+  if(label === "2. Versuch ✅") return [186,117,23];
+  if(label === "Lösung verwendet ❌") return [195,58,44];
+  return [128,139,131];
+}
+
+function downloadPDF(){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    alert("Die PDF-Bibliothek ist noch nicht geladen. Bitte versuche es in wenigen Sekunden erneut.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const margin = 15;
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const maxWidth = pageW - margin * 2;
+  let y = 16;
+
+  const now = new Date();
+  const dt = now.toLocaleString('de-DE');
+
+  function addWrapped(text, x, yPos, width, lineHeight=6, color=[26,46,26], size=11, style='normal'){
+    doc.setFont('helvetica', style);
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(text, width);
+    if(yPos + lines.length * lineHeight > pageH - 16){
+      doc.addPage();
+      yPos = 16;
+    }
+    doc.text(lines, x, yPos);
+    return yPos + lines.length * lineHeight;
+  }
+
+  function sectionBreak(extra=6){
+    y += extra;
+    if(y > pageH - 20){
+      doc.addPage();
+      y = 16;
+    }
+  }
+
+  doc.setFillColor(234,243,222);
+  doc.roundedRect(margin, y, maxWidth, 26, 5, 5, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(39,80,10);
+  doc.text("Biologie – Mitose", margin + 4, y + 10);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(74,101,80);
+  doc.text("Ergebnisprotokoll der interaktiven Lernaufgabe", margin + 4, y + 17);
+  y += 34;
+
+  y = addWrapped("Datum und Uhrzeit: " + dt, margin, y, maxWidth, 6, [74,101,80], 11, 'normal');
+  y = addWrapped("Bearbeitete Lerninhalte (Ausschnitt): " + document.getElementById('contentInput').innerText.trim(), margin, y + 2, maxWidth, 5.4, [26,46,26], 10, 'normal');
+
+  sectionBreak(8);
+
+  const ids = Object.keys(tasks);
+  let score = 0;
+
+  ids.forEach((id, index) => {
+    const st = taskState[id];
+    const answer = getStudentAnswer(id) || "–";
+    const label = st.statusLabel || "–";
+    if(label === "1. Versuch ✅" || label === "2. Versuch ✅") score++;
+    const col = statusColor(label);
+
+    doc.setDrawColor(220,228,218);
+    doc.setFillColor(255,255,255);
+    if(y > pageH - 50){
+      doc.addPage();
+      y = 16;
+    }
+    doc.roundedRect(margin, y, maxWidth, 8, 3, 3, 'FD');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.setTextColor(39,80,10);
+    doc.text((index + 1) + ". " + tasks[id].question, margin + 3, y + 5.5);
+    y += 12;
+
+    y = addWrapped("Antwort des Schülers: " + answer, margin + 2, y, maxWidth - 4, 5.5, [26,46,26], 10.5, 'normal');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...col);
+    if(y > pageH - 18){
+      doc.addPage();
+      y = 16;
+    }
+    doc.text(label, margin + 2, y + 2);
+    y += 8;
+
+    doc.setFont('helvetica','italic');
+    doc.setFontSize(9.8);
+    doc.setTextColor(74,101,80);
+    const solLines = doc.splitTextToSize("Lösung / Erwartung: " + tasks[id].solution, maxWidth - 4);
+    if(y + solLines.length * 4.8 > pageH - 16){
+      doc.addPage();
+      y = 16;
+    }
+    doc.text(solLines, margin + 2, y);
+    y += solLines.length * 4.8 + 6;
+  });
+
+  const evalText = getEvaluationText(score, ids.length);
+  if(y > pageH - 38){
+    doc.addPage();
+    y = 16;
+  }
+  doc.setFillColor(250,238,218);
+  doc.roundedRect(margin, y, maxWidth, 24, 5, 5, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.setTextColor(39,80,10);
+  doc.text("Gesamtauswertung", margin + 4, y + 7);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(11);
+  doc.setTextColor(26,46,26);
+  doc.text("Punktzahl: " + score + " / " + ids.length, margin + 4, y + 14);
+  doc.text(evalText, margin + 4, y + 20);
+
+  doc.save("Biologie_Mitose_Ergebnisse.pdf");
+}
+
+function resetAll(){
+  if(!confirm("Möchtest du wirklich alle Eingaben und Bewertungen zurücksetzen?")) return;
+
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+  ["t2a","t2b","t2c","t2d","t5answer","t8answer"].forEach(id => document.getElementById(id).value = "");
+  ["t3-prophase","t3-metaphase","t3-anaphase","t3-telophase"].forEach(id => document.getElementById(id).value = "");
+  Object.keys(tfSelections).forEach(k => delete tfSelections[k]);
+  document.querySelectorAll('.mini-btn').forEach(btn => btn.classList.remove('active'));
+
+  const sortList = document.getElementById("sortList");
+  sortList.innerHTML = `
+    <div class="order-item" data-value="Telophase"><span>Telophase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+    <div class="order-item" data-value="Prophase"><span>Prophase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+    <div class="order-item" data-value="Metaphase"><span>Metaphase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+    <div class="order-item" data-value="Anaphase"><span>Anaphase</span><div class="order-controls"><button class="mini-btn" onclick="moveUp(this)">↑</button><button class="mini-btn" onclick="moveDown(this)">↓</button></div></div>
+  `;
+
+  Object.keys(taskState).forEach(id => {
+    taskState[id] = {attempts:0, solved:false, correct:false, statusLabel:"–"};
+    document.getElementById("feedback-" + id).className = "feedback";
+    document.getElementById("feedback-" + id).textContent = "";
+    document.getElementById("status-" + id).textContent = "Noch nicht bewertet.";
+    document.getElementById("solveBtn-" + id).classList.add("hidden");
+  });
+
+  updateSummary();
+}
+
+updateSummary();
+</script>
+</body>
+</html>
